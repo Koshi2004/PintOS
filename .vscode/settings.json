@@ -1,0 +1,11 @@
+{
+	"files.associations": {
+		"*.as.ts": "assemblyscript",
+		"*.svg": "html",
+		"*.mdx": "markdown",
+		"intq.h": "c"
+	},
+	"[c]": {
+		"editor.formatOnSave": false
+	}
+}

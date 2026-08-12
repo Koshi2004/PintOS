@@ -5,6 +5,8 @@
 #include <list.h>
 #include <stdint.h>
 
+struct lock;
+
 /* States in a thread's life cycle. */
 enum thread_status
   {
@@ -87,8 +89,20 @@ struct thread
     enum thread_status status;          /* Thread state. */
     char name[16];                      /* Name (for debugging purposes). */
     uint8_t *stack;                     /* Saved stack pointer. */
-    int priority;                       /* Priority. */
+    int priority;                       /* Priority (possibly donated). */
     struct list_elem allelem;           /* List element for all threads list. */
+
+    /* Owned by thread.c: priority donation. */
+    int base_priority;                  /* Priority without donations. */
+    struct list locks;                  /* Locks currently held by this thread. */
+    struct lock *lock_waiting;          /* Lock this thread is blocked acquiring, or NULL. */
+
+    /* Owned by thread.c: advanced (4.4BSD) scheduler. */
+    int nice;                           /* Niceness. */
+    int recent_cpu;                     /* Recent CPU usage, fixed-point. */
+
+    /* Owned by thread.c: alarm clock. */
+    int64_t wakeup_tick;                /* Tick at which to wake, if sleeping. */
 
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
@@ -137,5 +151,16 @@ int thread_get_nice (void);
 void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
+
+/* Alarm clock. */
+void thread_sleep (int64_t wakeup_tick);
+void thread_wake_up (int64_t current_tick);
+
+/* Priority scheduling helpers, shared with synch.c. */
+bool thread_priority_less (const struct list_elem *a,
+                            const struct list_elem *b, void *aux);
+void thread_preempt (void);
+void thread_donate_priority (struct thread *t);
+void thread_update_priority (struct thread *t);
 
 #endif /* threads/thread.h */

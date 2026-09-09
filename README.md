@@ -13,10 +13,10 @@ minimal skeleton.
 
 | Project | Description | Status |
 |---|---|---|
-| **1 — Threads** | Alarm clock (no busy-waiting), priority scheduling with priority donation, and the 4.4BSD advanced scheduler (MLFQS) | ✅ Complete |
-| **2 — User Programs** | Argument passing, system calls (process control + file I/O), user-memory validation, process wait/exit semantics, denying writes to running executables | ✅ Complete |
-| **3 — Virtual Memory** | Page tables, page fault handling, swapping, memory-mapped files | Not started |
-| **4 — File Systems** | Extensible files, subdirectories, buffer cache | Not started |
+| **1 - Threads** | Alarm clock (no busy-waiting), priority scheduling with priority donation, and the 4.4BSD advanced scheduler (MLFQS) | ✅ Complete |
+| **2 - User Programs** | Argument passing, system calls (process control + file I/O), user-memory validation, process wait/exit semantics, denying writes to running executables | ✅ Complete |
+| **3 - Virtual Memory** | Page tables, page fault handling, swapping, memory-mapped files | Not started |
+| **4 - File Systems** | Extensible files, subdirectories, buffer cache | Not started |
 
 ## Getting started
 
@@ -63,7 +63,7 @@ simulator and reports pass/fail for each one.
 host machine supports hardware virtualization (VT-x/AMD-V) and you're
 running directly on it (not inside a nested VM), `--qemu` will generally
 be faster. Inside a VM without nested virtualization, QEMU falls back to
-slow software emulation and tests can time out — Bochs avoids this
+slow software emulation and tests can time out - Bochs avoids this
 because it's always software-emulated at a consistent speed.
 
 ## Repository layout

@@ -1,89 +1,90 @@
-# Pintos Docker Setup
+# Pintos
 
-This Dockerfile is designed to set up Pintos, an educational operating system framework for the x86 architecture, in any operating system using Docker. It provides a straightforward way to get Pintos running without the need to manually configure the development environment.
+An implementation of [Pintos](http://pintos-os.org), a teaching operating
+system for the x86 architecture, built for the undergraduate Operating
+Systems course (CS 600.318) at Johns Hopkins University.
 
-## Prerequisites
+Pintos is small enough to understand fully, yet realistic enough to run
+real x86 machine code inside a simulator (QEMU, Bochs, or VMWare Player).
+Students build out a working kernel across four projects, starting from a
+minimal skeleton.
 
-Before you begin, ensure you have Docker installed on your system. If you do not have Docker installed, follow the instructions on the [official Docker website](https://docs.docker.com/get-docker/) to install it.
+## What's implemented
 
-## Getting Started
+| Project | Description | Status |
+|---|---|---|
+| **1 — Threads** | Alarm clock (no busy-waiting), priority scheduling with priority donation, and the 4.4BSD advanced scheduler (MLFQS) | ✅ Complete |
+| **2 — User Programs** | Argument passing, system calls (process control + file I/O), user-memory validation, process wait/exit semantics, denying writes to running executables | ✅ Complete |
+| **3 — Virtual Memory** | Page tables, page fault handling, swapping, memory-mapped files | Not started |
+| **4 — File Systems** | Extensible files, subdirectories, buffer cache | Not started |
 
-To use this Docker setup for Pintos, follow these steps:
+## Getting started
 
-1. **Clone the Repository**
+You'll need a Linux environment (native, VM, or Docker) with the Pintos
+cross-compiler toolchain and either Bochs or QEMU as the simulator.
 
-   First, clone this repository to your local machine using:
-
-   ```bash
-   git clone https://github.com/kavienanj/pintos.git
-   ```
-
-2. **Build the Docker Image**
-
-   Navigate to the directory containing the Dockerfile and build the Docker image using:
-
-   ```bash
-   docker build -t pintos .
-   ```
-
-   This command builds a Docker image named `pintos` based on the instructions in the Dockerfile. You can replace `pintos` with any other name you prefer.
-
-3. **Run the Docker Container**
-
-   After the image has been successfully built, you can start a Docker container with the Pintos development environment using:
-
-   ```bash
-   docker run --rm -it pintos
-   ```
-
-   This command starts a new container and opens an interactive terminal session inside it. You are now in an environment where Pintos is set up and ready to use.
-
-4. **Verify Pintos Installation**
-
-   After entering the Docker container, you can verify that Pintos is correctly installed and working by running:
-
-   ```bash
-   make
-   cd build
-   pintos --
-   ```
-
-   This command runs Pintos with QEMU. If you prefer to use Bochs instead, you can run:
-
-   ```bash
-   pintos --bochs
-   ```
-
-   These commands should execute without errors, indicating that Pintos is ready for development inside the Docker container.
-
-## Working with Pintos
-
-To ensure that your changes to Pintos projects are saved on your host machine, you should mount the directory from your project into the corresponding directory in the Docker container. This allows you to work directly on your files using the Docker container's tools without losing changes when the container stops.
-
-Run the following command to start the Docker container with the source directory mounted:
+### Option 1: Docker
 
 ```bash
+git clone https://github.com/Koshi2004/PintOS.git
+cd PintOS
+docker build -t pintos .
 docker run -it --rm --mount type=bind,source="$(realpath ./pintos/src)",target=/pintos/src pintos
 ```
 
-Replace `/path/to/your/pintos/src` with the actual path to the `src` directory in your Pintos project on your host machine. Now, any changes you make inside the `/pintos/src` directory will be reflected in the `src` directory on your host machine, allowing you to seamlessly work across both environments.
-
-Then run the following commands to build and test Pintos:
+### Option 2: Linux / VM (e.g. Ubuntu on VirtualBox or WSL2)
 
 ```bash
-make
-cd build
-pintos --
+git clone https://github.com/Koshi2004/PintOS.git
+cd PintOS/pintos/src/misc
+
+# Build the cross-compiler toolchain and Bochs
+./toolchain-build.sh --prefix ~/pintos-toolchain ~/pintos-toolchain-src
+./bochs-2.6.2-build.sh ~/pintos-toolchain
+
+# Add the toolchain to your PATH (add this to ~/.bashrc to make it permanent)
+export PATH=~/pintos-toolchain/bin:$PATH
 ```
 
-## Getting Help
+### Building and testing a project
 
-If you encounter any issues while setting up or using Pintos with Docker, please feel free to open an issue in this repository. I will do my best to help you resolve the problem. Or reach out to me via email at [kavienanj@gmail.com](mailto:kavienanj@gmail.com).
+Once the environment is set up:
 
-## Customization
+```bash
+cd pintos/src/threads     # or userprog, vm, filesys
+make
+make check
+```
 
-If you need to customize the Docker environment, you can modify the Dockerfile and rebuild the image using the steps provided above. This allows you to add additional packages or change the configuration to suit your needs.
+`make check` builds and runs every test for that project inside the
+simulator and reports pass/fail for each one.
 
-## Contributing
+**Note on simulators:** `Make.vars` sets `SIMULATOR = --bochs`. If your
+host machine supports hardware virtualization (VT-x/AMD-V) and you're
+running directly on it (not inside a nested VM), `--qemu` will generally
+be faster. Inside a VM without nested virtualization, QEMU falls back to
+slow software emulation and tests can time out — Bochs avoids this
+because it's always software-emulated at a consistent speed.
 
-Contributions to improve the Docker setup for Pintos are welcome. Please feel free to submit pull requests or open issues if you have suggestions or encounter any problems.
+## Repository layout
+
+```
+pintos/src/
+├── threads/     Thread management, scheduling, synchronization
+├── userprog/    Process loading, system calls
+├── vm/          Virtual memory (Project 3)
+├── filesys/     File system (Project 4)
+├── devices/     Device drivers (timer, disk, keyboard, etc.)
+├── lib/         Shared C library code (kernel and user)
+└── tests/       Test programs and expected-output checkers
+```
+
+## Acknowledgements
+
+Pintos was created by Ben Pfaff and others at Stanford University. This
+course's variant comes from Ryan Huang's CS318 at Johns Hopkins
+(originally from [ryanphuang/PintosM](https://github.com/ryanphuang/PintosM)).
+The Docker setup is adapted from
+[kavienanj/pintos](https://github.com/kavienanj/pintos).
+
+See [`pintos/src/LICENSE`](pintos/src/LICENSE) for licensing details.

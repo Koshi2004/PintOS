@@ -545,6 +545,12 @@ init_thread (struct thread *t, const char *name, int priority)
   t->lock_waiting = NULL;
   t->magic = THREAD_MAGIC;
 
+#ifdef USERPROG
+  list_init (&t->children);
+  t->next_fd = 2;
+  list_init (&t->fds);
+#endif
+
   if (thread_mlfqs)
     {
       if (t == initial_thread)

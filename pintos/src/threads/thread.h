@@ -6,6 +6,8 @@
 #include <stdint.h>
 
 struct lock;
+struct file;
+struct child_info;
 
 /* States in a thread's life cycle. */
 enum thread_status
@@ -110,6 +112,13 @@ struct thread
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
+    int exit_code;                      /* Exit status, reported to parent via wait(). */
+    struct list children;               /* struct child_info for each child process. */
+    struct child_info *my_info;         /* This process's own child_info, shared with its
+                                            parent; NULL if it has no parent to report to. */
+    struct file *exec_file;             /* Running executable, write-denied while alive. */
+    struct list fds;                    /* Open file descriptors (struct fd_entry). */
+    int next_fd;                        /* Next file descriptor number to hand out. */
 #endif
 
     /* Owned by thread.c. */

@@ -115,8 +115,7 @@ sema_up (struct semaphore *sema)
   old_level = intr_disable ();
   if (!list_empty (&sema->waiters))
     {
-      struct list_elem *e = list_max (&sema->waiters, thread_priority_less,
-                                       NULL);
+      struct list_elem *e = list_max (&sema->waiters, thread_priority_less, NULL);
       list_remove (e);
       thread_unblock (list_entry (e, struct thread, elem));
     }
@@ -208,8 +207,6 @@ lock_acquire (struct lock *lock)
   old_level = intr_disable ();
   if (!thread_mlfqs && lock->holder != NULL)
     {
-      /* Donate our priority to the chain of threads blocking us,
-         nested up to 8 levels deep (see thread_donate_priority). */
       cur->lock_waiting = lock;
       thread_donate_priority (cur);
     }
@@ -339,12 +336,8 @@ cond_wait (struct condition *cond, struct lock *lock)
   lock_acquire (lock);
 }
 
-/* Compares two cond->waiters entries by the priority of the single
-   thread blocked on each one's private semaphore, for use by
-   cond_signal() to wake the highest-priority waiter. */
 static bool
-cond_sema_priority_less (const struct list_elem *a, const struct list_elem *b,
-                          void *aux UNUSED)
+cond_sema_priority_less (const struct list_elem *a, const struct list_elem *b, void *aux UNUSED)
 {
   struct semaphore_elem *sa = list_entry (a, struct semaphore_elem, elem);
   struct semaphore_elem *sb = list_entry (b, struct semaphore_elem, elem);
@@ -372,8 +365,7 @@ cond_signal (struct condition *cond, struct lock *lock UNUSED)
 
   if (!list_empty (&cond->waiters))
     {
-      struct list_elem *e = list_max (&cond->waiters,
-                                       cond_sema_priority_less, NULL);
+      struct list_elem *e = list_max (&cond->waiters, cond_sema_priority_less, NULL);
       list_remove (e);
       sema_up (&list_entry (e, struct semaphore_elem, elem)->semaphore);
     }

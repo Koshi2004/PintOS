@@ -494,9 +494,6 @@ load (const char *file_name, void (**eip) (void), void **esp)
   /* We arrive here whether the load is successful or not. */
   if (success)
     {
-      /* Keep the executable open (and read-only) for as long as
-         this process runs, so no one can modify code we're
-         executing out from under us. */
       file_deny_write (file);
       t->exec_file = file;
     }

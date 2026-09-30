@@ -13,10 +13,8 @@
 #include "userprog/pagedir.h"
 #include "userprog/process.h"
 
-/* Guards every access to the file system; see syscall.h. */
 struct lock filesys_lock;
 
-/* One entry in a process's open-file table. */
 struct fd_entry
   {
     int fd;
@@ -120,9 +118,7 @@ syscall_handler (struct intr_frame *f)
     }
 }
 
-/* ------------------------------------------------------------ */
-/* User memory validation.*/
-
+/* User memory validation. */
 static void
 kill_current_process (void)
 {
@@ -137,9 +133,6 @@ is_mapped_user_addr (const void *uaddr)
           && pagedir_get_page (thread_current ()->pagedir, uaddr) != NULL);
 }
 
-/* Verifies that the SIZE bytes starting at UADDR are entirely
-   mapped user memory, killing the current process if not. SIZE
-   must be at least 1. */
 static void
 check_user_ptr (const void *uaddr, size_t size)
 {
@@ -155,9 +148,6 @@ check_user_ptr (const void *uaddr, size_t size)
       kill_current_process ();
 }
 
-/* Verifies that USTR is a mapped, NUL-terminated user string,
-   killing the current process if it runs off into invalid memory
-   before finding the terminator. */
 static void
 check_user_string (const char *ustr)
 {
@@ -172,10 +162,6 @@ check_user_string (const char *ustr)
     }
 }
 
-/* Fetches the IDXth 32-bit word above the system call number on
-   the interrupt frame's user stack (IDX 0 is the call number
-   itself, IDX 1 the first argument, and so on), validating it
-   first. */
 static uint32_t
 get_syscall_arg (struct intr_frame *f, int idx)
 {
@@ -184,9 +170,7 @@ get_syscall_arg (struct intr_frame *f, int idx)
   return *addr;
 }
 
-/* ------------------------------------------------------------ */
 /* Process control. */
-
 static void
 sys_halt (void)
 {
@@ -217,9 +201,7 @@ sys_wait (tid_t pid)
   return process_wait (pid);
 }
 
-/* ------------------------------------------------------------ */
-/* File descriptor table. */
-
+/* File Descriptor table. */
 static struct fd_entry *
 fd_lookup (int fd)
 {
@@ -251,9 +233,7 @@ syscall_close_all_fds (void)
     }
 }
 
-/* ------------------------------------------------------------ */
-/* File system calls. */
-
+/* File System calls. */
 static bool
 sys_create (const char *file, unsigned initial_size)
 {

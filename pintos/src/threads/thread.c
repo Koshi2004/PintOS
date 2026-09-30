@@ -31,7 +31,7 @@ static struct list ready_list;
 static struct list all_list;
 
 /* List of threads blocked in timer_sleep(), ordered by nothing in
-   particular; woken threads are found by scanning for expired
+   particular, woken threads are found by scanning for expired
    wakeup_tick values.  See thread_sleep()/thread_wake_up(). */
 static struct list sleep_list;
 
@@ -379,9 +379,7 @@ thread_foreach (thread_action_func *func, void *aux)
     }
 }
 
-/* Sets the current thread's priority to NEW_PRIORITY.  Under the
-   advanced scheduler priorities are managed automatically, so this
-   has no effect in that mode. */
+/* Sets the current thread's priority to NEW_PRIORITY. */
 void
 thread_set_priority (int new_priority)
 {
@@ -398,8 +396,6 @@ thread_set_priority (int new_priority)
   old_priority = cur->priority;
   cur->base_priority = new_priority;
 
-  /* Only actually lower the effective priority if nothing is
-     currently being donated to us; otherwise keep the donation. */
   thread_update_priority (cur);
 
   intr_set_level (old_level);
@@ -415,9 +411,7 @@ thread_get_priority (void)
   return thread_current ()->priority;
 }
 
-/* Sets the current thread's nice value to NICE, and recalculates
-   the thread's priority accordingly, yielding if it is no longer
-   the highest-priority ready thread. */
+/* Sets the current thread's nice value to NICE. */
 void
 thread_set_nice (int nice)
 {
@@ -686,10 +680,7 @@ allocate_tid (void)
   return tid;
 }
 
-/* Returns true if thread A has lower priority than thread B.
-   Suitable for use as a list_less_func on any list that links
-   threads together via their `elem' member (the ready list, or a
-   semaphore's waiter list). */
+
 bool
 thread_priority_less (const struct list_elem *a, const struct list_elem *b,
                        void *aux UNUSED)
@@ -699,9 +690,6 @@ thread_priority_less (const struct list_elem *a, const struct list_elem *b,
   return ta->priority < tb->priority;
 }
 
-/* If some ready thread now outranks the running thread, give up
-   the CPU to it: yield immediately if called from thread context,
-   or arrange to yield on return from interrupt context. */
 void
 thread_preempt (void)
 {
@@ -724,9 +712,6 @@ thread_preempt (void)
   intr_set_level (old_level);
 }
 
-/* Recursively donates thread T's priority to whatever thread it is
-   (transitively) waiting on a lock for, up to a nesting depth of 8
-   as required for nested priority donation. */
 void
 thread_donate_priority (struct thread *t)
 {
@@ -742,9 +727,6 @@ thread_donate_priority (struct thread *t)
     }
 }
 
-/* Recomputes thread T's effective priority as the maximum of its
-   base priority and the priorities of all threads currently
-   waiting on locks that T holds. */
 void
 thread_update_priority (struct thread *t)
 {
@@ -769,9 +751,6 @@ thread_update_priority (struct thread *t)
   t->priority = max_priority;
 }
 
-/* Puts the current thread to sleep until WAKEUP_TICK (a value
-   comparable to those returned by timer_ticks()).  Used to
-   implement timer_sleep() without busy-waiting. */
 void
 thread_sleep (int64_t wakeup_tick)
 {
@@ -787,8 +766,6 @@ thread_sleep (int64_t wakeup_tick)
   intr_set_level (old_level);
 }
 
-/* Called from the timer interrupt handler on every tick.  Wakes
-   every sleeping thread whose wakeup tick has arrived. */
 void
 thread_wake_up (int64_t current_tick)
 {
@@ -812,9 +789,6 @@ thread_wake_up (int64_t current_tick)
     intr_yield_on_return ();
 }
 
-/* Recalculates the system load average, based on the number of
-   threads that were ready to run (including the running thread,
-   unless it is the idle thread) over the last second. */
 static void
 mlfqs_update_load_avg (void)
 {
@@ -826,8 +800,6 @@ mlfqs_update_load_avg (void)
                       FP_DIV_MIX (FP_CONST (ready_threads), 60));
 }
 
-/* Recalculates thread T's recent_cpu value from the current
-   load_avg, for use with thread_foreach(). */
 static void
 mlfqs_recalc_recent_cpu (struct thread *t, void *aux UNUSED)
 {
@@ -841,8 +813,6 @@ mlfqs_recalc_recent_cpu (struct thread *t, void *aux UNUSED)
   t->recent_cpu = FP_ADD_MIX (FP_MULT (coef, t->recent_cpu), t->nice);
 }
 
-/* Recalculates thread T's priority from its recent_cpu and nice
-   values, for use with thread_foreach(). */
 static void
 mlfqs_recalc_priority (struct thread *t, void *aux UNUSED)
 {
